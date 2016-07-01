@@ -1,0 +1,290 @@
+=====DAMLAS ASSIGNMENT # 1=====
+
+Data Analytics and Machine Learning at Scale
+Target, Minneapolis
+
+ASSIGNMENT #1
+Version 2016-06-19
+Prepared by Dr. James G. Shanahan
+
+
+SCHEDULE: This Homework is due by Monday, June 27 at 9AM (West Coast Time).
+
+
+=== INSTRUCTIONS for SUBMISSIONS ===
+Follow the instructions for submissions carefully.
+
+Prepare a single Jupyter note, please include questions, and question numbers in the questions and in the responses.
+Submit your homework notebook via the following form:
+
+   + http://goo.gl/forms/er3OFr5eCMWDngB72
+
+
+=== Other BACKGROUND INFORMATION
+This Homework, you will need to use a map-reduce framework to solve all  problems involving data. You can use MrJob or raw Hadoop mapreduce streaming.
+
+The following notebook serves as a useful Notebook to extend for this Homework (loaded with examples and boiler plate code)
+
+     http://nbviewer.jupyter.org/urls/dl.dropbox.com/s/ak6gc96mxv6ng6p/NaiveBayesInMrJob_Partial.ipynb
+
+Please refer to the following slides for more background
+
+        + https://www.dropbox.com/s/oit81k16fwri8cc/Probability-Theory-NaiveBayes-All-Ways.pdf?dl=0
+        + https://www.dropbox.com/s/x49sa13jxu5tuc3/Lecture07-MrJob-Clustering.pdf?dl=0
+
+
+=== REFERENCES
+As reference chapter please read chapter 13 from the IRBook  (Introduction to Information Retrieval
+By Christopher D. Manning, Prabhakar Raghavan & Hinrich Schütze, © 2008 Cambridge University Press
+   + Website: http://informationretrieval.org/
+
+Multinomial Naive Bayes with Laplace smoothing
+   + http://nlp.stanford.edu/IR-book/pdf/13bayes.pdf
+
+MRjob Reference (any question you may have on MRJob from : 
+   + http://mrjob.readthedocs.io/en/latest/
+
+Writing An Hadoop MapReduce Program In Python (WordCount)
+   + http://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/
+
+
+=== SERVER with MRJob installed
+
+http://ec2-52-201-222-181.compute-1.amazonaws.com:8000
+
+ you will need a password to access.
+
+Dont forget to save your notebooks REGULARLY to your local laptops (as the cluster could crash without warning)
+
+
+
+
+=== HW 1 ASSIGNMENTS using Mrjob or Hadoop Streaming and Python (classification using Multinomial Naive Bayes)===
+
+HW1.0.0. Define big data. Provide an example of a big data problem in your domain of expertise. 
+
+What is a race condition in the context of parallel computation? Give an example.
+What is MapReduce?
+How does it differ from Hadoop?
+
+HW1.0.1: 
+Here is an example of functional programming in basic python in terms of mappers and reducers (by way of example):
+
+
+#EXAMPLE Mapper functions in Python
+def fahrenheit(T):
+    return ((float(9)/5)*T + 32)
+
+def celsius(T):
+    return (float(5)/9)*(T-32)
+ 
+temperatures = (36.5, 37, 37.5, 38, 39)
+F = map(fahrenheit, temperatures)
+#returns  97.7  98.6  99.5 100.4 102.2
+C = map(celsius, F)
+
+#EXAMPLE Reducer function in Python
+import functools
+functools.reduce(lambda x,y: x+y, [47,11,42,13])
+#returns 113
+
+import functools as reduce
+print "Average temp is %fF" % (reduce(lambda x,y: x+y, F)/len(F) )
+#returns Average temp is 99.68F
+
+
+Which programming paradigm is Hadoop based on? Explain and give a simple example of functional programming in raw python code and show the code running. E.g., in raw python find the average length of a string in and of strings using a python "map-reduce" (functional programming) job (similar in style to the above). Alternatively, you can do this in python Hadoop Streaming.   
+
+strings = ["str1", "string2", "w261", "MAchine learning at SCALE"]
+.......
+
+ 
+import functools as reduce
+temperatures = (36.5, 37, 37.5, 38, 39)
+F = map(fahrenheit, temperatures)
+print "Average temp is %fF" % (reduce(lambda x,y: x+y, F)/len(F) )
+#returns Average temp is 99.68F
+
+map(sqr, items)
+
+
+
+HW1.1 Cross fold validation (*)
+
+What is cross validation (in partiticular 10-fold cross validation)?
+
+
+* for more background see slides from lecture 2:
+   + https://www.dropbox.com/s/3ch0yb4oxyxsuo9/Lecture-02-ML-Intro-Bias-Variance.pdf?dl=0
+
+and 
+
+   + https://en.wikipedia.org/wiki/Cross-validation_(statistics)
+
+===== SPAM Dataset 
+In the remainder of this assignment you will produce a spam filter
+that is backed by a multinomial naive Bayes classifier  (see http://nlp.stanford.edu/IR-book/html/htmledition/properties-of-naive-bayes-1.html).
+
+For the sake of this assignment we will focus on the basic construction 
+of the parallelized classifier, and not consider its validation or calibration,
+and so you will have the classifier operate on its own training data (unlike a 
+field application where one would use non-overlapping subsets for training, validation and testing).
+
+The data you will use is a curated subset of the Enron email corpus
+(whose details you may find in the file enronemail_README.txt  in the directory surrounding these instructions).
+
+NOTE: please use the subject field and the body field for all your Naive Bayes modeling. 
+
+NOTE: This SPAM/HAM dataset for HW1 contains 100 records from the Enron SPAM/HAM corpus. Please limit your study to this unless otherwise instructed. There are about 93,000 emails in the original SPAM/HAM corpus. There are several versions of the SPAM/HAM corpus. Other Enron-Spam datasets are available from http://www.aueb.gr/users/ion/data/enron-spam/index.html and http://www.aueb.gr/users/ion/publications.html in both raw and pre-processed form. 
+
+Doing some exploratory data analysis you will see (with this very small dataset) the following:
+> wc -l enronemail_1h.txt  #100 email records
+     100 enronemail_1h.txt
+> cut -f2 -d$'\t' enronemail_1h.txt|wc  #extract second field which is SPAM flag
+     101     394    3999
+JAMES-SHANAHANs-Desktop-Pro-2:HW1-Questions jshanahan$ cut -f2 -d$'\t' enronemail_1h.txt|head
+0
+0
+0
+0
+0
+0
+0
+0
+1
+1
+
+> head -n 100 enronemail_1h.txt|tail -1|less #an example SPAM email record
+018.2001-07-13.SA_and_HP       1        [ilug] we need your assistance to invest in your country        dear sir/madam,  i am well confident of your capability to assist me in  a transaction for mutual benefit of both parties, ie  (me and you) i am also believing that you will not  expose or betray the trust and confidence i am about  to establish with you. i have decided to contact you  with greatest delight and personal respect.  well, i am victor sankoh, son to mr. foday  sankoh  who was arrested by the ecomog peace keeping force  months ago in my country sierra leone. ….
+
+
+HW1.2:  WORDCOUNT
+Using the Enron dataset and Hadoop MapReduce streaming (or MRJob), write the mapper/reducer job that  will determine the word count (number of occurrences) of each white-space delimitted token (assume spaces, fullstops, comma as delimiters). Examine the word “assistance” and report its word count results.
+
+ 
+CROSSCHECK: >grep assistance enronemail_1h.txt|cut -d$'\t' -f4| grep assistance|wc -l    
+       8    
+       #NOTE  "assistance" occurs on 8 lines but how many times does the token occur? 10 times! This is the number we are looking for!
+
+HW1.2.1  Using Hadoop MapReduce (or MRJob) and your wordcount job (from HW1.2) determine the top-10 occurring tokens (most frequent tokens) using a single reducer. 
+
+
+
+HW1.3: Multinomial NAIVE BAYES with NO Smoothing using a single reducer
+
+Using the Enron data from HW1 and Hadoop MapReduce (or MRJob), write  a mapper/reducer job(s) that
+   will both learn  Naive Bayes classifier and classify the Enron email messages using the learnt Naive Bayes classifier. Use all white-space delimitted tokens as independent input variables (assume spaces, fullstops, commas as delimiters). Note: for multinomial Naive Bayes, the Pr(X=“assistance”|Y=SPAM) is calculated as follows:
+
+   the number of times “assistance” occurs in SPAM labeled documents / the number of words in documents labeled SPAM 
+
+   E.g.,   “assistance” occurs 5 times in all of the documents Labeled SPAM, and the length in terms of the number of words in all documents labeled as SPAM (when concatenated) is 1,000. Then Pr(X=“assistance”|Y=SPAM) = 5/1000. Note this is a multinomial estimation of the class conditional for a Naive Bayes Classifier. No smoothing is needed in this HW. Multiplying lots of probabilities, which are between 0 and 1, can result in floating-point underflow. Since log(xy) = log(x) + log(y), it is better to perform all computations by summing logs of probabilities rather than multiplying probabilities. Please pay attention to probabilites that are zero! They will need special attention. Count up how many times you need to process a zero probabilty for each class and report. 
+
+   Report the performance of your learnt classifier in terms of misclassifcation error rate of your multinomial Naive Bayes Classifier. Plot a histogram of the  posterior probabilities (i.e., Pr(Class|Doc)) for each class over the training set. Summarize what you see. 
+
+   Error Rate = misclassification rate with respect to a provided set (say training set in this case). It is more formally defined here:
+
+Let DF represent the evalution set in the following:
+Err(Model, DF) = |{(X, c(X)) ∈ DF : c(X) != Model(x)}|   / |DF|
+
+Where || denotes set cardinality; c(X) denotes the class of the tuple X in DF; and Model(X) denotes the class inferred by the Model “Model”
+
+NOTE: please assume one reducer.
+
+
+
+
+HW1.4:  Multinomial Naive Bayes with Smoothing 
+HW1.4.0: Repeat HW1.3 with the following modification: use Laplace plus-one smoothing. Compare the misclassifcation error rates for HW1.3 versus HW1.4 and explain the differences.
+
+For a quick reference on the construction of the Multinomial NAIVE BAYES classifier that you will code,
+please consult the "Document Classification" section of the following wikipedia page:
+
+https://en.wikipedia.org/wiki/Naive_Bayes_classifier#Document_classification
+
+OR the original paper by the curators of the Enron email data:
+
+http://www.aueb.gr/users/ion/docs/ceas2006_paper.pdf
+
+HW 1.4.1 Jelinek-Mercer (JM) smoothing* 
+
+With different smoothing methods, p(wk|ci) (i.e., the word class conditionals) will be computed
+differently. We consider Jelinek-Mercer (JM) smoothing as an alternative to Laplace  Let c(w, ci) denote
+the frequency of word w in category ci,  p(w|C) be the maximum likelihood estimation of word w in 
+collection C (relative frequency) and let |C for classi| denote the length of the classi. Then:
+
+1) Jelinek-Mercer (JM) smoothing:
+pλ (w|ci) = (1 − λ) * c(w, ci)/|C for classi|   +  λ p(w|C)
+
+where λ = 0.3  
+λ a hyperparameter for the Jelinek-Mercer (JM) smoothing that gives more (or less) 
+credit to the background model p(w|C) or to the foreground model 
+
+Repleat HW 1.4.0 with Jelinek-Mercer (JM) smoothing. Present a nice table comparing results where each 
+row is the approach taken (Multinomial Naive Bayes with Laplace+1, or Multinomial Naive Bayes with JM) and the column is error rate.
+
+HW1.4.2 Split data in to training, validation and testing data subsets
+
+Split the data using MRJob into three subsets in the following proportions (70% for training, 15% for valdiation, and 15% for testing). Train Multinomial Naive Bayes classifiers using Laplace plus-one smoothing and using  Jelinek-Mercer (JM) smoothing where you consider different hyperparameter values for λ. Please consider λ in {0.0, 0.1, 0.3, 0.5, 0.7, 1}. Present  a table compare the  results of the different approaches: each  row is the approach taken (e.g., Multinomial Naive Bayes with Laplace+1, or Multinomial Naive Bayes with  with JM= 0.3 for λ =0.3) and a column for  error rate on the training, validation and test data sets. Present a graph also (in python) consisting of three curves (where the x-axis represents the approach taken and the y-axis represents the error rate). Dont forget to put a good title on your graph!
+
+Looking the validation curve select the best model. How does it perform on the unseen test set? Comment.
+
+
+* REFERENCES 
+   + http://www.ntu.edu.sg/home/gaocong/papers/wpp095-yuan.pdf
+
+
+HW1.5: Remove words with frequency of less than three (3) in the training set
+
+Repeat HW1.4. This time when modeling and classification ignore tokens with a frequency of less than three (3) in the training set. How does it affect the misclassifcation error of learnt naive multinomial Bayesian Classifier on the training dataset. Report the error and the change in error. HINT: ignore tokens with a frequency of less than three (3). Think of this as a preprocessing step. How many new mapreduce jobs do you need to solve thus homework? 
+
+
+
+HW1.6 Benchmark your code with the Python SciKit-Learn implementation of the multinomial Naive Bayes algorithm
+HW1.6.0: Multinomial Naive Bayes using SciKit-Learn
+
+It always a good idea to benchmark your solutions against publicly available libraries such as SciKit-Learn, The Machine Learning toolkit available in Python. In this exercise, we benchmark ourselves against the SciKit-Learn implementation of multinomial Naive Bayes.  For more information on this implementation see: http://scikit-learn.org/stable/modules/naive_bayes.html more  
+
+In this exercise, please complete the following:
+
+— Run the Multinomial Naive Bayes algorithm (using default settings) from SciKit-Learn over the same training data used in HW1.4.2 and report the misclassification error (please note some data preparation might be needed to get the Multinomial Naive Bayes algorithm from SkiKit-Learn to run over this dataset)
+- Prepare a table to present your results, where rows correspond to approach used (SkiKit-Learn versus your Hadoop implementation) and the column presents the  misclassification error rates (train, validation, testing)
+— Explain/justify any differences in terms of training error rates over the dataset in HW1.5 between your Multinomial Naive Bayes implementation (in Map Reduce) versus the Multinomial Naive Bayes implementation in SciKit-Learn 
+
+
+HW 1.6.1: OPTIONAL (note this exercise is a stretch HW and optional)
+
+-  Bernoulli Naive Bayes using SciKit-Learn
+—  Run the Bernoulli Naive Bayes algorithm from SciKit-Learn (using default settings) over the same training data used in HW1.6 and report the misclassification error 
+-  Discuss the performance differences in terms of misclassification error rates over the dataset in HW1.5 between the  Multinomial Naive Bayes implementation in SciKit-Learn with the  Bernoulli Naive Bayes implementation in SciKit-Learn. Why such big differences. Explain. 
+
+Which approach to Naive Bayes would you recommend for SPAM detection? Justify your selection.
+
+
+
+HW1.7: OPTIONAL Preprocess the Entire Spam Dataset
+
+The Enron SPAM data in the following folder enron1-Training-Data-RAW (https://www.dropbox.com/sh/hemnvr0422nr36g/AAAPoK-aYxkFGxGjzaeRNEwSa?dl=0) is in raw text form (with subfolders for SPAM and HAM that contain raw email messages in the following form:
+
+--- Line 1 contains the subject
+--- The remaining lines contain the body of the email message.
+
+In Python (or MrJob) write a script to produce a TSV file called train-Enron-1.txt that has a similar format as the enronemail_1h.txt that you have been using so far. Please pay attend to funky characters and tabs. Check your resulting formated email data in Excel and in Python (e.g., count up the number of fields in each row; the number of SPAM mails and the number of HAM emails). Does each row correspond to an email record with four values? Note: use "NA" to denote empty field values.
+
+
+
+HW1.8: OPTIONAL Build and evaluate a NB classifier on the  Entire Spam Dataset
+Using Hadoop Map-Reduce write job(s) to perform the following:
+ -- Train a multinomial Naive Bayes Classifier with Laplace plus one smoothing using the data extracted in HW1.7 (i.e., train-Enron-1.txt). Use all white-space delimitted tokens as independent input variables (assume spaces, fullstops, commas as delimiters). Drop tokens with a frequency of less than three (3).
+ -- Test the learnt classifier using enronemail_1h.txt and report the misclassification error rate. Remember to use all white-space delimitted tokens as independent input variables (assume spaces, fullstops, commas as delimiters). How do we treat tokens in the test set that do not appear in the training set?
+
+
+HW1.8.1: OPTIONAL
+—  Run  both the Multinomial Naive Bayes and the Bernoulli Naive Bayes algorithms from SciKit-Learn (using default settings) over the same training data used in HW1.8 and report the misclassification error on both the training set and the testing set
+- Prepare a table to present your results, where rows correspond to approach used (SciKit-Learn Multinomial NB; SciKit-Learn Bernouili NB; Your Hadoop implementation)  and the columns presents the training misclassification error, and the misclassification error on the test data set
+-  Discuss the performance differences in terms of misclassification error rates over the test and training datasets by the different implementations. Which approch (Bernouili versus Multinomial) would you recommend for SPAM detection? Justify your selection.
+
+
+=====================
+END OF HOMEWORK
+
+

@@ -1,0 +1,396 @@
+=====DAMLAS ASSIGNMENT # 2=====
+
+Data Analytics and Machine Learning at Scale
+Target, Minneapolis
+
+ASSIGNMENT #2
+Version 2016-06-26
+Prepared by Dr. James G. Shanahan
+
+
+SCHEDULE: This Homework is due by  Friday, July 8, 2016 at 11 AM (Central Time).
+
+
+=== INSTRUCTIONS for SUBMISSIONS ===
+Follow the instructions for submissions carefully.
+
+Prepare a single Jupyter note, please include questions, and question numbers in the questions and in the responses.
+Submit your homework notebook via the following form:
+
+   + http://goo.gl/forms/er3OFr5eCMWDngB72
+
+
+=== Other BACKGROUND INFORMATION
+This Homework, you will need to use a map-reduce framework to solve all  problems involving data. You can use MrJob or raw Hadoop mapreduce streaming.
+
+The following notebook serves as a useful Notebook to extend for this Homework (loaded with examples and boiler plate code)
+
+   +  https://www.dropbox.com/s/pjd6maluq4ogt7m/HW02-Supporting-Material.ipynb?dl=0
+
+Please refer to the following slides and reference material for more background
+
+
+Pattern in MapReduce : 
+
+    + Lin, Jimmy, & Dyer, Chris. (2010). Data-intensive text processing with MapReduce. 
+      San Rafael, CA: Morgan & Claypool Publishers. 
+      Chapter 3
+      Book available here: https://lintool.github.io/MapReduceAlgorithms/MapReduce-book-final.pdf
+
+   + Chapter 2 in this book: Hadoop with MRJob (calculater salare average etc.) 
+          -  https://www.dropbox.com/s/jd3z2s216p9kc1z/hadoop-with-python-MRJOB.pdf?dl=0
+          -  Source code: https://www.dropbox.com/sh/j8oettuxbgztk0p/AAAwq9PpEeByecDmaSNslnBPa?dl=0
+
+   + http://mrjob.readthedocs.io/en/latest/
+
+Counters in MRJob
+   + http://nbviewer.jupyter.org/urls/dl.dropbox.com/s/5thl14n4pqvhzt5/Counter.ipynb 
+
+KMeans Clustering (a form of Flat clustering)
+   + Slides:  https://www.dropbox.com/s/6ef1mlrqr3xpnw0/Lecture07.1-Clustering.pdf?dl=0
+   + http://nlp.stanford.edu/IR-book/pdf/16flat.pdf
+   + http://nbviewer.jupyter.org/urls/dl.dropbox.com/s/dcw8evd9v0su3xu/K_Means_Unit_Test_Notebook.ipynb
+
+
+
+=== SERVER with MRJob installed
+
+http://ec2-52-201-222-181.compute-1.amazonaws.com:8000
+
+ you will need a password to access.
+
+Dont forget to save your notebooks REGULARLY to your local laptops (as the cluster could crash without warning)
+
+
+
+
+=== HW 2 ASSIGNMENTS using Mrjob for cooccurence problems and KMeans clustering ===
+
+
+
+HW2.0:
+How do you merge  two sorted  lists/arrays of records of the form [key, value]? Where is this  used in Hadoop MapReduce? [Hint within the shuffle]
+What is  a combiner function in the context of Hadoop? 
+Give an example where it can be used and justify why it should be used in the context of this problem.
+What is the Hadoop shuffle?
+
+
+
+HW2.1: Counters as a debugging aid (and for getting work done, but please use sparingly as they are heavy)
+
+Consumer complaints dataset: Use Counters to do EDA (exploratory data analysis and to monitor progress)
+Counters are lightweight objects in Hadoop that allow you to keep track of system progress in both the map and reduce stages of processing. By default, Hadoop defines a number of standard counters in "groups"; these show up in the jobtracker webapp, giving you information such as "Map input records", "Map output records", etc. 
+
+While processing information/data using MapReduce job, it is a challenge to monitor the progress of parallel threads running across nodes of distributed clusters. Moreover, it is also complicated to distinguish between the data that has been processed and the data which is yet to be processed. The MapReduce Framework offers a provision of user-defined Counters, which can be effectively utilized to monitor the progress of data across nodes of distributed clusters.
+
+Use the Consumer Complaints  Dataset provide here to complete this question:
+
+     https://www.dropbox.com/s/vbalm3yva2rr86m/Consumer_Complaints.csv?dl=0
+
+The consumer complaints dataset consists of diverse consumer complaints, which have been reported across the United States regarding various types of loans. The dataset consists of records of the form:
+
+Complaint ID,Product,Sub-product,Issue,Sub-issue,State,ZIP code,Submitted via,Date received,Date sent to company,Company,Company response,Timely response?,Consumer disputed?
+
+Here’s is the first few lines of the  of the Consumer Complaints  Dataset:
+
+Complaint ID,Product,Sub-product,Issue,Sub-issue,State,ZIP code,Submitted via,Date received,Date sent to company,Company,Company response,Timely response?,Consumer disputed?
+1114245,Debt collection,Medical,Disclosure verification of debt,Not given enough info to verify debt,FL,32219,Web,11/13/2014,11/13/2014,"Choice Recovery, Inc.",Closed with explanation,Yes,
+1114488,Debt collection,Medical,Disclosure verification of debt,Right to dispute notice not received,TX,75006,Web,11/13/2014,11/13/2014,"Expert Global Solutions, Inc.",In progress,Yes,
+1114255,Bank account or service,Checking account,Deposits and withdrawals,,NY,11102,Web,11/13/2014,11/13/2014,"FNIS (Fidelity National Information Services, Inc.)",In progress,Yes,
+1115106,Debt collection,"Other (phone, health club, etc.)",Communication tactics,Frequent or repeated calls,GA,31721,Web,11/13/2014,11/13/2014,"Expert Global Solutions, Inc.",In progress,Yes,
+
+User-defined Counters
+
+Now, let’s use MapReduce Counters to identify the number of complaints pertaining to debt collection, mortgage and other categories (all other categories get lumped into this one) in the consumer complaints dataset. Basically produce the distribution of the Product column in this dataset using counters (limited to 3 counters here).
+
+Hadoop offers Job Tracker, an UI tool to determine the status and statistics of all jobs. Using the job tracker UI, developers can view the Counters that have been created. Screenshot your  job tracker UI as your job completes and include it here. Make sure that your user defined counters are visible. 
+
+
+=======================
+HW2.2: Analyze the performance of your Mappers, Combiners and Reducers using Counters
+
+For this brief study the Input file will be one record (the next line only): 
+foo foo quux labs foo bar quux
+
+
+Perform a word count analysis of this single record dataset using a Mapper and Reducer based WordCount (i.e., no combiners are used here) using user defined Counters to count up how many time the mapper and reducer are called. What is the value of your user defined Mapper Counter, and Reducer Counter after completing this word count job. The answer  should be 1 and 4 respectively. Please explain.
+
+Please use mulitple mappers and reducers for these jobs (at least 2 mappers and 2 reducers).
+Perform a word count analysis of the Issue column of the Consumer Complaints  Dataset using a Mapper and Reducer based WordCount (i.e., no combiners used anywhere)  using user defined Counters to count up how many time the mapper and reducer are called. What is the value of your user defined Mapper Counter, and Reducer Counter after completing your word count job. 
+
+Perform a word count analysis of the Issue column of the Consumer Complaints  Dataset using a Mapper, Reducer, and standalone combiner (i.e., not an in-memory combiner) based WordCount using user defined Counters to count up how many time the mapper, combiner, reducer are called. What is the value of your user defined Mapper Counter, and Reducer Counter after completing your word count job. 
+Using a single reducer: What are the top 50 most frequent terms in your word count analysis? Present the top 50 terms and their frequency and their relative frequency. Present the top 50 terms and their frequency and their relative frequency. If there are ties please sort the tokens in alphanumeric/string order. Present bottom 10 tokens (least frequent items). 
+
+2.2.1:  
+Using 2 reducers: What are the top 50 most frequent terms in your word count analysis? Present the top 50 terms and their frequency and their relative frequency. Present the top 50 terms and their frequency and their relative frequency. If there are ties please sort the tokens in alphanumeric/string order. Present bottom 10 tokens (least frequent items). Please use a combiner.
+
+
+=======================
+HW2.3: Shopping Cart Analysis
+Product Recommendations: The action or practice of selling additional products or services 
+to existing customers is called cross-selling. Giving product recommendation is 
+one of the examples of cross-selling that are frequently used by online retailers. 
+One simple method to give product recommendations is to recommend products that are frequently
+browsed together by the customers.
+  
+For this homework use the online browsing behavior dataset located at: 
+
+       https://www.dropbox.com/s/zlfyiwa70poqg74/ProductPurchaseData.txt?dl=0
+
+Each line in this dataset represents a browsing session of a customer. 
+On each line, each string of 8 characters represents the id of an item browsed during that session. 
+The items are separated by spaces.
+
+Here are the first few lines of the ProductPurchaseData 
+FRO11987 ELE17451 ELE89019 SNA90258 GRO99222 
+GRO99222 GRO12298 FRO12685 ELE91550 SNA11465 ELE26917 ELE52966 FRO90334 SNA30755 ELE17451 FRO84225 SNA80192 
+ELE17451 GRO73461 DAI22896 SNA99873 FRO86643 
+ELE17451 ELE37798 FRO86643 GRO56989 ELE23393 SNA11465 
+ELE17451 SNA69641 FRO86643 FRO78087 SNA11465 GRO39357 ELE28573 ELE11375 DAI54444 
+
+
+Do some exploratory data analysis of this dataset guided by the following questions:. 
+
+How many unique items are available from this supplier?
+
+Using a single reducer: Report your findings such as number of unique products; largest basket; report the top 50 most frequently purchased items,  their frequency,  and their relative frequency (break ties by sorting the products alphabetical order) etc. using Hadoop Map-Reduce. 
+
+2.3.1 OPTIONAL 
+Using 2 reducers:  Report your findings such as number of unique products; largest basket; report the top 50 most frequently purchased items,  their frequency,  and their relative frequency (break ties by sorting the products alphabetical order) etc. using Hadoop Map-Reduce. 
+
+
+=======================
+HW2.4. (Computationally prohibitive but then again Hadoop can handle this) Pairs
+
+From a data mining perspective (and the aPriori algorihtm in particular), Support and Confidence are defined as follows:
+
+       SUPPORT
+       In data mining, the support value of X (where X is a collection of cooccurring items sometimes referred to as 
+       an item-set. E.g., a basket or subset of a basket) with respect to T  (a transaction database where each 
+       row is a transaction such as a basket of items that have been purchased)  is defined as the proportion 
+       of transactions in the  database which contains  the item-set X. (a relative frequency of sorts) 
+
+       CONFIDENCE 
+       The confidence value of a rule, X ==>  Y (where X is a collection of cooccurring items and Y is generally 
+       a single item. E.g., If Diapers and Beer then Cigars were also purchased), with respect to a set of transactions T, is the 
+       proportion of the transactions that contains X which also contains Y. (Think of it as  tgePr(Y|X) )
+
+       The pairs/stripes algorithm returns cooccurrence information that can be used directly to  calculate the confidence and support. 
+       Note that confidence for pair X ==>  Y will  differ from the relative frequency that results from stripes when X occurs by itself in transactions.
+
+
+Suppose we want to recommend new products to the customer based on the products they
+have already browsed on the online website. Write a map-reduce program 
+to find products which are frequently browsed together. Fix the support count (cooccurence count) to s = 100 
+(i.e. product pairs need to occur together at least 100 times to be considered frequent) 
+and find pairs of items (sometimes referred to itemsets of size 2 in association rule mining) that have a support count of 100 or more.
+
+List the top 50 product pairs with corresponding support count (aka frequency), and relative frequency or support (number of records where they coccur, the number of records where they coccur/the number of baskets in the dataset)  in decreasing order of support  for frequent (100>count) itemsets of size 2. 
+
+Use the Pairs pattern  to  extract these frequent itemsets of size 2. Free free to use combiners if they bring value. Instrument your code with counters for count the number of times your mapper, combiner and reducers are called.  
+
+Please output records of the following form for the top 50 pairs (itemsets of size 2): 
+
+      item1, item2, support count, support  (OPTIONAL Feel free to add in confidence level also)
+
+
+
+Fix the ordering of the pairs lexicographically (left to right), 
+and break ties in support (between pairs, if any exist) 
+by taking the first ones in lexicographically increasing order. 
+
+Report  the compute time for the Pairs job. Describe the computational setup used (E.g., single computer; dual core; linux, number of mappers, number of reducers)
+Instrument your mapper, combiner, and reducer to count how many times each is called using Counters and report these counts.
+
+
+
+=======================
+HW2.5: Stripes
+Repeat 2.4 using the stripes design pattern for finding cooccuring pairs (and out.
+
+Report  the compute times for stripes job versus the Pairs job. Describe the computational setup used (E.g., single computer; dual core; linux, number of mappers, number of reducers)
+
+Instrument your mapper, combiner, and reducer to count how many times each is called using Counters and report these counts. Discuss the differences in these counts between the Pairs and Stripes jobs
+
+
+
+=======================
+HW2.6: KMeans Clustering Tweet Dataset  [OPTIONAL]
+
+For this problem, please refer to and borrow from the following notebook:
+
+   http://nbviewer.jupyter.org/urls/dl.dropbox.com/s/dcw8evd9v0su3xu/K_Means_Unit_Test_Notebook.ipynb
+
+
+Here you will use a different dataset consisting of word-frequency distributions 
+for 1,000 Twitter users. These Twitter users use language in very different ways,
+and were classified by hand according to the criteria:
+
+0: Human, where only basic human-human communication is observed.
+
+1: Cyborg, where language is primarily borrowed from other sources
+(e.g., jobs listings, classifieds postings, advertisements, etc...).
+
+2: Robot, where language is formulaically derived from unrelated sources
+(e.g., weather/seismology, police/fire event logs, etc...).
+
+3: Spammer, where language is replicated to high multiplicity
+(e.g., celebrity obsessions, personal promotion, etc... )
+
+Check out the preprints of  recent research,
+which spawned this dataset:
+
+http://arxiv.org/abs/1505.04342
+http://arxiv.org/abs/1508.01843
+
+The main data lie in the accompanying file:
+
+topUsers_Apr-Jul_2014_1000-words.txt located at:
+        https://www.dropbox.com/s/6129k2urvbvobkr/topUsers_Apr-Jul_2014_1000-words.txt?dl=0
+
+and are of the form:
+
+USERID,CODE,TOTAL,WORD1_COUNT,WORD2_COUNT,...
+.
+.
+
+where
+
+USERID = unique user identifier
+CODE = 0/1/2/3 class code
+TOTAL = sum of the word counts
+
+Using this data, you will implement a 1000-dimensional K-means algorithm in MrJob on the users
+by their 1000-dimensional word stripes/vectors using several 
+centroid initializations and values of K.
+
+Note that each "point" is a user as represented by 1000 words, and that
+word-frequency distributions are generally heavy-tailed power-laws
+(often called Zipf distributions), and are very rare in the larger class
+of discrete, random distributions. For each user you will have to normalize
+by its "TOTAL" column. Try several parameterizations and initializations:
+
+(A) K=4 uniform random centroid-distributions over the 1000 words (generate 1000 random numbers and normalize the vectors)
+(B) K=2 perturbation-centroids, randomly perturbed from the aggregated (user-wide) distribution 
+(C) K=4 perturbation-centroids, randomly perturbed from the aggregated (user-wide) distribution 
+(D) K=4 "trained" centroids, determined by the sums across the classes. Use use the 
+(row-normalized) class-level aggregates as 'trained' starting centroids (i.e., the training is already done for you!).
+Note that you do not have to compute the aggregated distribution or the 
+class-aggregated distributions, which are rows in the auxiliary file:
+
+topUsers_Apr-Jul_2014_1000-words_summaries.txt located at:
+   https://www.dropbox.com/s/w4oklbsoqefou3b/topUsers_Apr-Jul_2014_1000-words_summaries.txt?dl=0
+
+
+Row 1: Words
+Row 2: Aggregated distribution across all classes
+Row 3-6 class-aggregated distributions for clases 0-3
+For (A),  we select 4 users randomly from a uniform distribution [1,...,1,000]
+For (B), (C), and (D)  you will have to use data from the auxiliary file: 
+
+topUsers_Apr-Jul_2014_1000-words_summaries.txt
+
+This file contains 5 special word-frequency distributions:
+
+(1) The 1000-user-wide aggregate, which you will perturb for initializations
+in parts (B) and (C), and
+
+(2-5) The 4 class-level aggregates for each of the user-type classes (0/1/2/3)
+
+
+In parts (B) and (C), you will have to perturb the 1000-user aggregate 
+(after initially normalizing by its sum, which is also provided).
+So if in (B) you want to create 2 perturbations of the aggregate, start
+with (1), normalize, and generate 1000 random numbers uniformly 
+from the unit interval (0,1) twice (for two centroids), using:
+
+from numpy import random
+numbers = random.sample(1000)
+
+Take these 1000 numbers and add them (component-wise) to the 1000-user aggregate,
+and then renormalize to obtain one of your aggregate-perturbed initial centroids.
+
+
+###################################################################################
+## Geneate random initial centroids around the global aggregate
+## Part (B) and (C) of this question
+###################################################################################
+def startCentroidsBC(k):
+    counter = 0
+    for line in open("topUsers_Apr-Jul_2014_1000-words_summaries.txt").readlines():
+        if counter == 2:        
+            data = re.split(",",line)
+            globalAggregate = [float(data[i+3])/float(data[2]) for i in range(1000)]
+        counter += 1
+    ## perturb the global aggregate for the four initializations    
+    centroids = []
+    for i in range(k):
+        rndpoints = random.sample(1000)
+        peturpoints = [rndpoints[n]/10+globalAggregate[n] for n in range(1000)]
+        centroids.append(peturpoints)
+        total = 0
+        for j in range(len(centroids[i])):
+            total += centroids[i][j]
+        for j in range(len(centroids[i])):
+            centroids[i][j] = centroids[i][j]/total
+    return centroids
+
+
+
+——
+For experiments A, B, C and D and iterate until a threshold (try 0.001) is reached.
+After convergence, print out a summary of the classes present in each cluster.
+In particular, report the composition as measured by the total
+portion of each class type (0-3) contained in each cluster,
+and discuss your findings and any differences in outcomes across parts A-D.
+
+
+HW 2.7: (OPTIONAL)    Logfile clean up
+
+This exercise workes  Microsoft logfiles data. The logfiles are described are located at:
+
+https://kdd.ics.uci.edu/databases/msweb/msweb.html
+http://archive.ics.uci.edu/ml/machine-learning-databases/anonymous/
+
+This dataset records which areas/pages (Vroots) of www.microsoft.com each user visited in a one-week timeframe in Feburary 1998.
+
+ Here, you must preprocess the data on a single node (i.e., not on a cluster of nodes) from the format:
+
+C,"10001",10001   #Visitor id 10001
+V,1000,1          #Visit by Visitor 10001 to page id 1000
+V,1001,1          #Visit by Visitor 10001 to page id 1001
+V,1002,1          #Visit by Visitor 10001 to page id 1002
+C,"10002",10002   #Visitor id 10001
+V
+Note: #denotes comments
+to the format:
+
+V,1000,1,C, 10001
+V,1001,1,C, 10001
+V,1002,1,C, 10001
+
+Write the python code to accomplish this. 
+
+2.7.1    Explain you can not do this  clean up on one machine.
+
+
+HW 2.8:  Find the 5 most frequently visited pages
+
+Find the 5 most frequently visited pages using MrJob from the output of HW2.7 (i.e., transfromed log file).
+
+WARNING: per-step jobconf has bugs that affect Total sorts/partitions etc.
+For MRJob,  Sort, partition code via the MRJob config does NOT work in local mode (known bug/feature which I believe has not been fixed as of June 2016). 
+So you will need to run in the cloud (e.g.  in AWS).
+It's issue #616 in github:  "Inline and Local modes should support per-step jobconf #616".  https://github.com/Yelp/mrjob/issues/616
+To overcome this issue run your MRJob jobs on the cloud using -r hadoop or -r emr:
+
+       #!python MostFrequentVisits.py -r hadoop anonymous-msweb_converted.data
+
+
+
+
+
+=====================
+END OF HOMEWORK
+
+
